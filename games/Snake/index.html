@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description"
+    content="Snake — Game klasik berbasis web. Kendalikan ular, makan buah, dan raih skor tertinggi!">
+  <title>Snake Game</title>
+
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <div id="app">
+
+    <!-- ═══════════════════════════════════════════ -->
+    <!-- MAIN MENU SCREEN                            -->
+    <!-- ═══════════════════════════════════════════ -->
+    <div id="menu-screen" class="screen active">
+      <div class="menu-card">
+        <h1 class="game-title">
+          <span class="title-icon">🐍</span>
+          <span class="title-text">SNAKE</span>
+        </h1>
+        <!-- Skin Selector -->
+        <div class="skin-selector-container">
+          <p class="selector-label">Choose Snake Skin</p>
+          <div class="skin-options">
+            <button class="skin-opt active" data-skin="classic" type="button" title="Classic Neon">
+              <span class="skin-preview skin-preview--classic"></span>
+            </button>
+            <button class="skin-opt" data-skin="blue" type="button" title="Electric Blue">
+              <span class="skin-preview skin-preview--blue"></span>
+            </button>
+            <button class="skin-opt" data-skin="purple" type="button" title="Cyber Purple">
+              <span class="skin-preview skin-preview--purple"></span>
+            </button>
+            <button class="skin-opt" data-skin="gold" type="button" title="Gold Aura">
+              <span class="skin-preview skin-preview--gold"></span>
+            </button>
+          </div>
+          <p id="selected-skin-name" class="selected-skin-name">Classic Neon</p>
+        </div>
+
+        <button id="btn-start" class="btn btn-primary" type="button">
+          <span class="btn-icon">▶</span>
+          Start Game
+        </button>
+
+        <div class="controls-info">
+          <p class="controls-heading">Controls</p>
+          <div class="controls-grid">
+            <div class="control-group">
+              <div class="key-row">
+                <kbd>W</kbd>
+              </div>
+              <div class="key-row">
+                <kbd>A</kbd>
+                <kbd>S</kbd>
+                <kbd>D</kbd>
+              </div>
+            </div>
+            <span class="controls-divider">or</span>
+            <div class="control-group">
+              <div class="key-row">
+                <kbd>↑</kbd>
+              </div>
+              <div class="key-row">
+                <kbd>←</kbd>
+                <kbd>↓</kbd>
+                <kbd>→</kbd>
+              </div>
+            </div>
+          </div>
+          <p class="controls-hint">Press <kbd>P</kbd> or <kbd>Esc</kbd> to pause</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════ -->
+    <!-- GAME SCREEN                                 -->
+    <!-- ═══════════════════════════════════════════ -->
+    <div id="game-screen" class="screen">
+      <div class="game-container">
+        <!-- HUD -->
+        <div id="hud">
+          <div class="hud-item">
+            <span class="hud-label">SCORE</span>
+            <span id="hud-score" class="hud-value">0</span>
+          </div>
+          <div class="hud-item">
+            <span class="hud-label">LENGTH</span>
+            <span id="hud-length" class="hud-value">3</span>
+          </div>
+        </div>
+
+        <!-- Canvas -->
+        <div class="canvas-wrapper">
+          <canvas id="game-canvas" width="600" height="600"></canvas>
+        </div>
+
+        <!-- Mobile Virtual D-Pad -->
+        <div class="mobile-controls">
+          <button id="ctrl-up" class="ctrl-btn ctrl-btn--up" type="button">▲</button>
+          <div class="ctrl-row">
+            <button id="ctrl-left" class="ctrl-btn ctrl-btn--left" type="button">◀</button>
+            <div class="ctrl-center"></div>
+            <button id="ctrl-right" class="ctrl-btn ctrl-btn--right" type="button">▶</button>
+          </div>
+          <button id="ctrl-down" class="ctrl-btn ctrl-btn--down" type="button">▼</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════ -->
+    <!-- GAME OVER MODAL                             -->
+    <!-- ═══════════════════════════════════════════ -->
+    <div id="gameover-modal" class="modal-overlay">
+      <div class="modal-card">
+        <div class="modal-icon">💀</div>
+        <h2 class="modal-title modal-title--gameover">GAME OVER</h2>
+        <div class="modal-score-section">
+          <p class="modal-score-label">Final Score</p>
+          <p id="gameover-score" class="modal-score-value">0</p>
+        </div>
+        <button id="btn-restart" class="btn btn-primary" type="button">
+          <span class="btn-icon">↻</span>
+          Restart
+        </button>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════ -->
+    <!-- VICTORY MODAL                               -->
+    <!-- ═══════════════════════════════════════════ -->
+    <div id="victory-modal" class="modal-overlay">
+      <div class="modal-card modal-card--victory">
+        <div class="modal-icon">🏆</div>
+        <h2 class="modal-title modal-title--victory">CONGRATULATIONS!</h2>
+        <p class="modal-subtitle">You Win!</p>
+        <div class="modal-score-section">
+          <p class="modal-score-label">Final Score</p>
+          <p id="victory-score" class="modal-score-value">0</p>
+        </div>
+        <button id="btn-play-again" class="btn btn-primary" type="button">
+          <span class="btn-icon">▶</span>
+          Play Again
+        </button>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════ -->
+    <!-- PAUSE OVERLAY                               -->
+    <!-- ═══════════════════════════════════════════ -->
+    <div id="pause-overlay" class="modal-overlay">
+      <div class="pause-content">
+        <div class="pause-icon">⏸</div>
+        <h2 class="pause-text">PAUSED</h2>
+        <p class="pause-hint">Press <kbd>P</kbd> or <kbd>Esc</kbd> to resume</p>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="game.js"></script>
+</body>
+
+</html>

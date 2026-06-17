@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- SEO Meta Tags -->
+  <title>GameHub — Main Game Instan Tanpa Akun & Password</title>
+  <meta name="description"
+    content="Mainkan berbagai game kasual secara instan di GameHub. Tanpa pendaftaran, tanpa login, tanpa password, tanpa friksi. Klik langsung main!">
+  <meta name="keywords" content="game portal, game gratis, game tanpa login, snake game, game kasual, instant games">
+  <meta name="author" content="GameHub">
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="GameHub — Main Game Instan Tanpa Akun">
+  <meta property="og:description"
+    content="Portal game kasual instan. Tanpa pendaftaran, tanpa login, tanpa password. Buka web, pilih game, langsung main!">
+
+  <!-- Favicon placeholder (Uses SVG emoji) -->
+  <link rel="icon"
+    href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎮</text></svg>">
+
+  <!-- Main Stylesheet -->
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+
+<body>
+
+  <!-- Header Section -->
+  <header>
+    <div class="container">
+      <div class="logo">
+        <span class="logo-icon">🎮</span>
+        <h1 class="logo-text">Game<span>Hub</span></h1>
+      </div>
+      <p class="tagline">
+        Main game kasual instan <span class="tagline-highlight">tanpa akun & tanpa password</span>.
+        Buka halaman, pilih game favoritmu, dan langsung mainkan!
+      </p>
+    </div>
+  </header>
+
+  <!-- Main Content Area -->
+  <main>
+    <div class="container">
+
+      <!-- Info Banner / Frictionless Alert -->
+      <section class="info-banner" aria-label="Informasi Kemudahan">
+        <span class="info-banner-icon">⚡</span>
+        <p><strong>Frictionless Gaming:</strong> Game akan terbuka di tab baru secara terisolasi. Progres dan fokus Anda
+          langsung dialihkan ke game tersebut.</p>
+      </section>
+
+      <!-- Games Grid (Populated dynamically via JavaScript) -->
+      <section class="games-section" aria-label="Katalog Game">
+        <div id="games-grid" class="games-grid">
+          <!-- Loading placeholder -->
+          <div style="text-align: center; grid-column: 1/-1; color: var(--text-muted); padding: 40px 0;">
+            <p>Memuat katalog game...</p>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- Footer Section -->
+  <footer>
+    <div class="container">
+      <div class="footer-content">
+        <p class="footer-text">
+          &copy; 2026 <span class="footer-highlight">GameHub</span>. Dibuat dengan 💖 untuk kesenangan instan.
+        </p>
+        <p class="footer-credit">
+          GameHub disediakan oleh <span class="footer-highlight">Developer Komunitas</span>
+          <span class="footer-separator">|</span>
+          Berbasis web static murni.
+        </p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <!-- gamesConfig loaded first to expose the catalog database -->
+  <script src="games-config.js"></script>
+  <!-- mainJS script loads and renders the UI -->
+  <script src="assets/js/main.js"></script>
+</body>
+
+</html>
