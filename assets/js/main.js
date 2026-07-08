@@ -3,6 +3,7 @@
 document.addEventListener('DOMContentLoaded', () => {
   renderGames();
   setupUpdateLogModal();
+  setupAboutMeModal();
   setupAchievementsModal();
   checkAchievementsActivation();
 });
@@ -130,6 +131,52 @@ function setupUpdateLogModal() {
       btn.addEventListener('click', () => {
         modal.classList.remove('active');
         document.body.style.overflow = ''; // Restore scroll
+        modal.setAttribute('aria-hidden', 'true');
+      });
+    }
+  });
+
+  // Close modal on Escape key press
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && modal.classList.contains('active')) {
+      modal.classList.remove('active');
+      document.body.style.overflow = '';
+      modal.setAttribute('aria-hidden', 'true');
+    }
+  });
+}
+
+/**
+ * Sets up event listeners for opening and closing the About Me modal.
+ */
+function setupAboutMeModal() {
+  const modal = document.getElementById('about-me-modal');
+  const openModalBtn = document.getElementById('btn-about-me');
+  
+  if (!modal || !openModalBtn) {
+    console.warn('About Me modal or button not found in the DOM.');
+    return;
+  }
+  
+  const closeModalBtns = [
+    document.getElementById('about-me-close-btn'),
+    document.getElementById('about-me-close-footer'),
+    modal.querySelector('.modal-overlay')
+  ];
+
+  // Open modal
+  openModalBtn.addEventListener('click', () => {
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+    modal.setAttribute('aria-hidden', 'false');
+  });
+
+  // Close modal
+  closeModalBtns.forEach(btn => {
+    if (btn) {
+      btn.addEventListener('click', () => {
+        modal.classList.remove('active');
+        document.body.style.overflow = '';
         modal.setAttribute('aria-hidden', 'true');
       });
     }

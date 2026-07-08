@@ -43,6 +43,9 @@
         <button id="btn-update-log" class="btn-outline" aria-label="Buka Catatan Pembaruan">
           <span class="btn-icon">📋</span> Catatan Pembaruan
         </button>
+        <button id="btn-about-me" class="btn-outline" aria-label="Buka Tentang Pembuat">
+          <span class="btn-icon">👤</span> Tentang Pembuat
+        </button>
         <button id="btn-achievements" class="btn-outline" style="display: none;" aria-label="Buka Menu Pencapaian">
           <span class="btn-icon">🏆</span> Pencapaian
         </button>
@@ -154,6 +157,50 @@
       </div>
       <div class="modal-footer">
         <button id="modal-close-footer" class="btn-play">Tutup Halaman</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- About Me Modal -->
+  <div id="about-me-modal" class="modal" aria-hidden="true" role="dialog" aria-labelledby="about-me-title">
+    <div class="modal-overlay" tabindex="-1"></div>
+    <div class="modal-container">
+      <div class="modal-header">
+        <h2 id="about-me-title" class="modal-title">👤 Tentang Pembuat (About Me)</h2>
+        <button id="about-me-close-btn" class="modal-close" aria-label="Tutup">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="about-me-content" style="display: flex; flex-direction: column; align-items: center; text-align: center; gap: 20px; padding: 10px 0;">
+          <div class="profile-avatar" style="font-size: 5rem; background: var(--bg-glass); border: 2px solid var(--border-active); width: 120px; height: 120px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 20px rgba(0, 242, 254, 0.2);">
+            👨‍💻
+          </div>
+          <div class="profile-details">
+            <h3 style="font-size: 1.6rem; font-weight: 800; background: linear-gradient(135deg, #ffffff, #a1a1aa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 8px;">
+              Ederick Xavier Santoso
+            </h3>
+            <p style="color: var(--accent-cyan); font-weight: 600; font-size: 0.95rem; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 16px;">
+              Programmer and Student
+            </p>
+            <p style="color: var(--text-muted); line-height: 1.6; font-size: 0.95rem; max-width: 500px; margin: 0 auto 20px auto;">
+              Halo! Saya adalah pembuat di balik platform GameHub ini. Saya adalah siswa SMA 2 dan sedang belajar untuk membuat program yang dapat membantu dan berguna dalam kehidupan sehari-hari seperti GameHub ini yang dapat menghibur orang-orang. Thank you sudah mencoba GameHub, sedang dalam mode beta tolong harapkan bug dan error 
+            </p>
+            
+            <div class="profile-stats" style="display: flex; justify-content: center; gap: 30px; margin-top: 10px; background: rgba(255,255,255,0.02); padding: 15px 30px; border-radius: 16px; border: 1px solid var(--border-glass);">
+              <div>
+                <div style="font-size: 1.5rem; font-weight: 800; color: var(--accent-purple);">3</div>
+                <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;">Game Rilis</div>
+              </div>
+              <div style="border-right: 1px solid var(--border-glass);"></div>
+              <div>
+                <div style="font-size: 1.5rem; font-weight: 800; color: var(--accent-cyan);">HTML5</div>
+                <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px;">Teknologi</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="about-me-close-footer" class="btn-play">Tutup Halaman</button>
       </div>
     </div>
   </div>
