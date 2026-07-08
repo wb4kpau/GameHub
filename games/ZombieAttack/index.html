@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Zombie Attack — Bertahan hidup dari gelombang zombie di kompleks sekolah! Kumpulkan ZCoin, upgrade senjata, dan gacha skill elemen.">
+  <title>Zombie Attack</title>
+
+  <!-- Google Fonts: Inter & Press Start 2P for retro feeling -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&family=Press+Start+2P&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="app">
+
+    <!-- ═══════════════════════════════════════════ -->
+    <!-- MAIN MENU SCREEN                            -->
+    <!-- ═══════════════════════════════════════════ -->
+    <div id="menu-screen" class="screen active">
+      <div class="menu-card">
+        <h1 class="game-title">
+          <span class="title-glow">ZOMBIE</span>
+          <span class="title-sub">ATTACK</span>
+        </h1>
+        <p class="subtitle">School Survival Shooter</p>
+
+        <!-- Ultimate Selection at Start -->
+        <div class="ultimate-selection-menu">
+          <p class="selection-title">PILIH ULTIMATE SKILL</p>
+          <div class="ultimate-select-buttons">
+            <button id="btn-select-laser" class="btn-select-ult active" type="button" data-ult="laser">
+              <span>⚡</span> Laser Beam
+            </button>
+            <button id="btn-select-immortality" class="btn-select-ult" type="button" data-ult="immortality">
+              <span>🛡️</span> Immortality
+            </button>
+          </div>
+        </div>
+
+        <div class="menu-actions">
+          <button id="btn-start" class="btn btn-primary" type="button">
+            <span class="btn-icon">💀</span>
+            Start Game
+          </button>
+          <button id="btn-open-shop-menu" class="btn btn-secondary" type="button">
+            <span class="btn-icon">🛒</span>
+            Weapon Shop
+          </button>
+        </div>
+
+        <div class="controls-info">
+          <p class="controls-heading">Controls</p>
+          <div class="controls-grid">
+            <div class="control-row">
+              <span class="control-label">Move</span>
+              <div class="keys-container">
+                <kbd>W</kbd> <kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd> <span class="divider">or</span> <kbd>←</kbd> <kbd>→</kbd> <kbd>↑</kbd> <kbd>↓</kbd>
+              </div>
+            </div>
+            <div class="control-row">
+              <span class="control-label">Aim & Shoot</span>
+              <div class="keys-container">
+                <span class="mouse-icon">🖱️</span> Mouse Move + Left Click
+              </div>
+            </div>
+            <div class="control-row">
+              <span class="control-label">Reload</span>
+              <div class="keys-container">
+                <kbd>R</kbd>
+              </div>
+            </div>
+            <div class="control-row">
+              <span class="control-label">Switch Weapon</span>
+              <div class="keys-container">
+                <kbd>1</kbd> - <kbd>6</kbd> <span class="divider">or</span> Scroll Mouse
+              </div>
+            </div>
+          </div>
+          <p class="controls-hint">Press <kbd>P</kbd> or <kbd>Esc</kbd> to pause</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════ -->
+    <!-- GAME SCREEN                                 -->
+    <!-- ═══════════════════════════════════════════ -->
+    <div id="game-screen" class="screen">
+      <div class="game-container">
+        <!-- HUD -->
+        <div id="hud">
+          <div class="hud-left">
+            <!-- HP Bar -->
+            <div class="hud-item-group">
+              <span class="hud-label">HP</span>
+              <div class="hp-bar-container">
+                <div id="hp-bar-fill" class="hp-bar-fill" style="width: 100%;"></div>
+                <span id="hp-text" class="hp-text">100/100</span>
+              </div>
+            </div>
+            <!-- Shop Button next to health bar -->
+            <button id="btn-open-shop-hud" class="btn-shop-hud" type="button" title="Open Weapon Shop">
+              <span>🛒</span> Shop
+            </button>
+            <!-- Weapon & Ammo -->
+            <div class="hud-item-group">
+              <span id="hud-weapon" class="hud-value">PISTOL</span>
+              <span id="hud-ammo" class="hud-value-sub">[∞/∞]</span>
+            </div>
+          </div>
+
+          <div class="hud-center">
+            <div class="hud-item-group" style="align-items: center;">
+              <span class="hud-label">WAVE</span>
+              <span id="hud-wave" class="hud-value" style="font-size: 16px;">1</span>
+            </div>
+          </div>
+
+          <div class="hud-right">
+            <!-- Ultimate Bar -->
+            <div class="hud-item-group">
+              <span class="hud-label" id="ultimate-hud-label">ULTIMATE (G)</span>
+              <div class="ultimate-bar-container" id="ultimate-bar-trigger" title="Click to activate when 100%">
+                <div id="ultimate-bar-fill" class="ultimate-bar-fill" style="width: 0%;"></div>
+                <span id="ultimate-text" class="ultimate-text">0%</span>
+              </div>
+            </div>
+            <!-- ZCoins -->
+            <div class="hud-item">
+              <span class="hud-label">ZCOIN</span>
+              <span id="hud-zcoin" class="hud-value-coin">0</span>
+            </div>
+            <button id="btn-cheat-toggle" class="btn-cheat-hud" type="button" title="Buka Console Cheat">⌨️</button>
+            <button id="btn-pause" class="btn-pause-circle" type="button" title="Pause">⏸</button>
+          </div>
+        </div>
+
+        <!-- Wave Banner Indicator -->
+        <div id="wave-banner" class="wave-banner">
+          <h2 id="wave-banner-title">WAVE 1</h2>
+          <p id="wave-banner-subtitle">Prepare Yourself!</p>
+        </div>
+
+        <!-- Canvas Wrapper -->
+        <div class="canvas-wrapper">
+          <canvas id="game-canvas" width="800" height="600"></canvas>
+        </div>
+
+        <!-- Mobile Controls (hidden on desktop) -->
+        <div class="mobile-controls">
+          <div id="joystick-move" class="joystick-zone">
+            <div class="joystick-base">
+              <div class="joystick-handle"></div>
+            </div>
+          </div>
+          <button id="btn-mobile-ultimate" class="btn-mobile-ult" type="button">⚡ ULT</button>
+          <div id="joystick-shoot" class="joystick-zone">
+            <div class="joystick-base">
+              <div class="joystick-handle"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Active Gacha Skills HUD -->
+        <div id="skills-hud" class="skills-hud">
+          <div class="skill-hud-slot" id="skill-slot-fire" data-skill="fire" title="Fire Skill (Burn damage)">
+            <span class="skill-hud-icon">🔥</span>
+            <span class="skill-hud-level" id="skill-level-fire">Lvl 0</span>
+          </div>
+          <div class="skill-hud-slot" id="skill-slot-ice" data-skill="ice" title="Ice Skill (Freeze / Slow speed)">
+            <span class="skill-hud-icon">❄️</span>
+            <span class="skill-hud-level" id="skill-level-ice">Lvl 0</span>
+          </div>
+          <div class="skill-hud-slot" id="skill-slot-shadow" data-skill="shadow" title="Shadow Skill (Pierce bullets)">
+            <span class="skill-hud-icon">💀</span>
+            <span class="skill-hud-level" id="skill-level-shadow">Lvl 0</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════ -->
+    <!-- SHOP MODAL                                  -->
+    <!-- ═══════════════════════════════════════════ -->
+    <div id="shop-modal" class="modal-overlay">
+      <div class="modal-card shop-card">
+        <h2 class="modal-title">📦 WEAPON SHOP</h2>
+        <div class="shop-zcoin-balance">
+          <span>SALDO ZCOIN:</span>
+          <span id="shop-zcoin-val" class="coin-glow">0</span>
+        </div>
+
+        <div class="shop-body">
+          <!-- Left side: Weapons list -->
+          <div class="shop-weapons-pane">
+            <h3>Pilih Senjata</h3>
+            <div id="shop-weapons-list" class="shop-list">
+              <!-- Dynamically populated in JS -->
+            </div>
+          </div>
+
+          <!-- Right side: Upgrades & Details -->
+          <div class="shop-details-pane">
+            <h3 id="shop-selected-name">NAMA SENJATA</h3>
+            <p id="shop-selected-desc">Deskripsi senjata.</p>
+
+            <div class="weapon-stats-comparison">
+              <div class="stat-row">
+                <span class="stat-name">Damage:</span>
+                <span id="stat-val-damage" class="stat-val">10</span>
+              </div>
+              <div class="stat-row">
+                <span class="stat-name">Fire Rate:</span>
+                <span id="stat-val-firerate" class="stat-val">Sedang</span>
+              </div>
+              <div class="stat-row">
+                <span class="stat-name">Kapasitas:</span>
+                <span id="stat-val-ammo" class="stat-val">12</span>
+              </div>
+            </div>
+
+            <div class="weapon-upgrades-section" id="weapon-upgrades-section">
+              <h4>Upgrade Permanen</h4>
+              <div class="upgrade-buttons-grid">
+                <button id="btn-upgrade-damage" class="btn btn-upgrade" type="button">
+                  <span>Upgrade Damage</span>
+                  <span id="cost-upgrade-damage" class="upgrade-cost">100</span>
+                </button>
+                <button id="btn-upgrade-firerate" class="btn btn-upgrade" type="button">
+                  <span>Upgrade Fire Rate</span>
+                  <span id="cost-upgrade-firerate" class="upgrade-cost">150</span>
+                </button>
+                <button id="btn-upgrade-capacity" class="btn btn-upgrade" type="button">
+                  <span>Upgrade Ammo Capacity</span>
+                  <span id="cost-upgrade-capacity" class="upgrade-cost">120</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Extra Life Purchase -->
+            <div class="extra-life-section">
+              <h4>Item Tambahan</h4>
+              <button id="btn-buy-life" class="btn btn-secondary btn-buy-life-style" type="button">
+                <span>❤️ Extra Life (Max 3)</span>
+                <span id="cost-buy-life" class="upgrade-cost">300</span>
+              </button>
+              <div id="purchased-lives-indicator">Nyawa Cadangan: 0/3</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-actions-shop">
+          <button id="btn-reset-progression" class="btn btn-secondary btn-reset-prog" type="button">🗑️ Reset Progress</button>
+          <button id="btn-close-shop" class="btn btn-secondary" type="button">Close Shop</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════ -->
+    <!-- GACHA SKILL MODAL                           -->
+    <!-- ═══════════════════════════════════════════ -->
+    <div id="gacha-modal" class="modal-overlay">
+      <div class="modal-card gacha-card">
+        <h2 class="modal-title gacha-title">🧬 BOSS DEFEATED! 🧬</h2>
+        <p class="gacha-subtitle">Buka kotak mutasi untuk mendapatkan Skill Elemen acak</p>
+        
+        <div class="gacha-cards-container">
+          <div class="gacha-card-item" id="gacha-card-1">
+            <div class="card-inner">
+              <div class="card-front">🔥</div>
+              <div class="card-back">
+                <span class="card-icon">🔥</span>
+                <h3 class="card-skill-name">API (FIRE)</h3>
+                <p class="card-skill-desc">Peluru membakar target (damage over time)</p>
+                <span class="card-rarity text-common">COMMON</span>
+              </div>
+            </div>
+          </div>
+          <div class="gacha-card-item" id="gacha-card-2">
+            <div class="card-inner">
+              <div class="card-front">❄️</div>
+              <div class="card-back">
+                <span class="card-icon">❄️</span>
+                <h3 class="card-skill-name">ES (ICE)</h3>
+                <p class="card-skill-desc">Peluru membekukan target (memperlambat gerakan)</p>
+                <span class="card-rarity text-rare">RARE</span>
+              </div>
+            </div>
+          </div>
+          <div class="gacha-card-item" id="gacha-card-3">
+            <div class="card-inner">
+              <div class="card-front">💀</div>
+              <div class="card-back">
+                <span class="card-icon">💀</span>
+                <h3 class="card-skill-name">BAYANGAN (SHADOW)</h3>
+                <p class="card-skill-desc">Peluru menembus target & memulihkan HP</p>
+                <span class="card-rarity text-legendary">LEGENDARY</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="gacha-actions">
+          <button id="btn-trigger-gacha" class="btn btn-primary" type="button">AMBIL GAIN MUTASI</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════ -->
+    <!-- PAUSE OVERLAY                               -->
+    <!-- ═══════════════════════════════════════════ -->
+    <div id="pause-overlay" class="modal-overlay">
+      <div class="pause-content">
+        <div class="pause-icon">⏸</div>
+        <h2 class="pause-text">PAUSED</h2>
+        <p class="pause-hint">Press <kbd>P</kbd> or <kbd>Esc</kbd> to resume</p>
+
+        <div class="pause-buttons-group">
+          <button id="btn-resume" class="btn btn-primary" type="button">
+            <span class="btn-icon">▶</span> Resume
+          </button>
+          <button id="btn-restart-pause" class="btn btn-secondary" type="button">
+            <span class="btn-icon">↻</span> Restart
+          </button>
+          <a id="btn-home-pause" href="../../index.html" class="btn btn-secondary">
+            <span class="btn-icon">🏠</span> Home
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════ -->
+    <!-- GAME OVER MODAL                             -->
+    <!-- ═══════════════════════════════════════════ -->
+    <div id="gameover-modal" class="modal-overlay">
+      <div class="modal-card">
+        <div class="modal-icon">💀</div>
+        <h2 class="modal-title modal-title--gameover">DIALAH ZOMBIE!</h2>
+        <p class="modal-subtitle">Anda gugur di kompleks sekolah.</p>
+
+        <div class="modal-score-section">
+          <div class="final-stat">
+            <span class="final-stat-label">Wave Terakhir</span>
+            <span id="gameover-wave" class="final-stat-val">Wave 1</span>
+          </div>
+          <div class="final-stat">
+            <span class="final-stat-label">ZCoin Didapat (Run ini)</span>
+            <span id="gameover-coins" class="final-stat-val">0</span>
+          </div>
+        </div>
+
+        <div class="modal-actions-gameover">
+          <button id="btn-use-life" class="btn btn-primary btn-glowing-green" type="button" style="display: none;">
+            <span class="btn-icon">❤️</span> Gunakan Nyawa Cadangan
+          </button>
+          <button id="btn-restart-gameover" class="btn btn-secondary" type="button">
+            <span class="btn-icon">↻</span> Main Lagi
+          </button>
+          <a id="btn-home-gameover" href="../../index.html" class="btn btn-secondary">
+            <span class="btn-icon">🏠</span> Home
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════ -->
+    <!-- CHEAT CONSOLE MODAL                         -->
+    <!-- ═══════════════════════════════════════════ -->
+    <div id="cheat-modal" class="modal-overlay">
+      <div class="modal-card cheat-card">
+        <div class="cheat-header">
+          <h2 class="modal-title cheat-title">💻 DEV CONSOLE</h2>
+          <button id="btn-close-cheat" class="btn-close-cheat-x" type="button">&times;</button>
+        </div>
+        <p class="cheat-subtitle">Override sistem game untuk pengujian / cheat</p>
+        
+        <div class="cheat-body">
+          <!-- Quick cheats grid -->
+          <div class="cheat-section">
+            <h3>Pemberian & Status</h3>
+            <div class="cheat-grid-row">
+              <button id="cheat-btn-coins" class="btn btn-secondary btn-cheat" type="button">🪙 +1.000 Coins</button>
+              <button id="cheat-btn-ultimate" class="btn btn-secondary btn-cheat" type="button">⚡ Max Ultimate</button>
+              <button id="cheat-btn-godmode" class="btn btn-secondary btn-cheat" type="button">🛡️ God Mode: Off</button>
+              <button id="cheat-btn-limitbreaker" class="btn btn-secondary btn-cheat" type="button">⚡ Max Limit Break</button>
+            </div>
+          </div>
+
+          <!-- Spawner select -->
+          <div class="cheat-section">
+            <h3>Spawn Zombie</h3>
+            <div class="cheat-spawn-row">
+              <select id="cheat-spawn-select" class="cheat-select">
+                <option value="regular">Zombie Biasa</option>
+                <option value="runner">Zombie Pelari</option>
+                <option value="tank">Zombie Tank</option>
+                <option value="thrower">Zombie Pelempar</option>
+                <option value="boss">Boss Mutasi</option>
+                <option value="zombie_king">Zombie King (Final Boss)</option>
+              </select>
+              <button id="cheat-btn-spawn" class="btn btn-primary btn-cheat-action" type="button">Spawn 🧟</button>
+            </div>
+          </div>
+
+          <!-- Arena control -->
+          <div class="cheat-section">
+            <h3>Kontrol Arena</h3>
+            <button id="cheat-btn-clear" class="btn btn-secondary btn-cheat-danger" type="button">💀 Musnahkan Semua Musuh</button>
+          </div>
+
+          <!-- Retro cheat input code -->
+          <div class="cheat-section">
+            <h3>Ketik Kode Rahasia</h3>
+            <div class="cheat-input-row">
+              <input type="text" id="cheat-text-input" class="cheat-input" placeholder="Contoh: kaching, godmode, spawnking" autocomplete="off" />
+              <button id="cheat-btn-submit-code" class="btn btn-primary" type="button">Submit</button>
+            </div>
+            <span id="cheat-status-msg" class="cheat-status-text"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="../../assets/js/achievements.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>

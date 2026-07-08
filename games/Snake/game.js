@@ -18,16 +18,31 @@ const TOTAL_CELLS = CONFIG.GRID_SIZE * CONFIG.GRID_SIZE;
 
 // ─── Skins & Fruit Configuration ───
 const SKINS = {
-  classic: { name: 'Classic Neon', head: '#00ff88', bodyStart: '#00cc6a', bodyEnd: '#008844' },
-  blue: { name: 'Electric Blue', head: '#00f0ff', bodyStart: '#00a3ff', bodyEnd: '#0055ff' },
-  purple: { name: 'Cyber Purple', head: '#d946ef', bodyStart: '#a21caf', bodyEnd: '#701a75' },
-  gold: { name: 'Gold Aura', head: '#fbbf24', bodyStart: '#d97706', bodyEnd: '#b45309' }
+  // Ular
+  classic: { name: 'Classic Neon', char: 'ular', head: '#00ff88', bodyStart: '#00cc6a', bodyEnd: '#008844' },
+  blue: { name: 'Electric Blue', char: 'ular', head: '#00f0ff', bodyStart: '#00a3ff', bodyEnd: '#0055ff' },
+  purple: { name: 'Cyber Purple', char: 'ular', head: '#d946ef', bodyStart: '#a21caf', bodyEnd: '#701a75' },
+  gold: { name: 'Gold Aura', char: 'ular', head: '#fbbf24', bodyStart: '#d97706', bodyEnd: '#b45309' },
+  // Naga
+  naga_fire: { name: 'Fire Dragon', char: 'naga', head: '#ff3a00', bodyStart: '#ff7e00', bodyEnd: '#ffd000' },
+  naga_ice: { name: 'Ice Dragon', char: 'naga', head: '#00f0ff', bodyStart: '#38bdf8', bodyEnd: '#1e3a8a' },
+  naga_shadow: { name: 'Shadow Dragon', char: 'naga', head: '#a21caf', bodyStart: '#581c87', bodyEnd: '#1e1b4b' },
+  // Cacing
+  cacing_earth: { name: 'Earth Worm', char: 'cacing', head: '#a87043', bodyStart: '#82522c', bodyEnd: '#573315' },
+  cacing_sand: { name: 'Sand Worm', char: 'cacing', head: '#d9a05b', bodyStart: '#b07a3e', bodyEnd: '#784f23' },
+  cacing_grub: { name: 'Albino Grub', char: 'cacing', head: '#fbcfe8', bodyStart: '#f472b6', bodyEnd: '#db2777' }
 };
 
 const FRUIT_TYPES = {
   APPLE: { color: '#ff4466', score: 10, glow: '#ff4466', weight: 0.7, name: 'Apple' },
   GRAPE: { color: '#a855f7', score: 20, glow: '#a855f7', weight: 0.2, name: 'Grape' },
   STAR: { color: '#fbbf24', score: 30, glow: '#fbbf24', weight: 0.1, name: 'Gold Star' }
+};
+
+const POWERUP_TYPES = {
+  FREEZE: { id: 'freeze', name: 'Ice Freeze', icon: '❄️', color: '#00f0ff', duration: 8000, speed: 230 },
+  GOLD: { id: 'gold', name: 'Golden Rush', icon: '👑', color: '#fbbf24', duration: 8000, speed: 95 },
+  SHRINK: { id: 'shrink', name: 'Shrink Potion', icon: '🧪', color: '#ff0055', duration: 0, speed: null }
 };
 
 // ─── Game State ───
@@ -46,12 +61,24 @@ let state = {
   nextDirection: { x: 1, y: 0 },
   fruit: { x: 0, y: 0 },
   fruitType: FRUIT_TYPES.APPLE,
+  selectedCharacter: 'ular',
   selectedSkin: 'classic',
   score: 0,
+  highScore: 0,
   gameLoopId: null,
   animationFrameId: null,
   lastRenderTime: 0,
   fruitPulse: 0,    // For fruit glow animation
+  
+  // Powerups and visual effects state
+  particles: [],
+  screenShake: 0,
+  spawnedPowerUp: null, // { x, y, type, despawnTime }
+  activePowerUp: null,  // { id, name, icon, color, timeLeft, totalDuration }
+
+  // Achievements tracking
+  fruitsEatenThisMatch: 0,
+  matchStartTime: 0,
 };
 
 // ─── DOM References ───
@@ -67,6 +94,7 @@ const DOM = {
   btnRestart: document.getElementById('btn-restart'),
   btnPlayAgain: document.getElementById('btn-play-again'),
   hudScore: document.getElementById('hud-score'),
+  hudHighscore: document.getElementById('hud-highscore'),
   hudLength: document.getElementById('hud-length'),
   gameoverScore: document.getElementById('gameover-score'),
   victoryScore: document.getElementById('victory-score'),
@@ -92,9 +120,19 @@ function initGame() {
   state.direction = { x: 1, y: 0 };
   state.nextDirection = { x: 1, y: 0 };
 
-  // Reset score
+  // Reset score & load high score
   state.score = 0;
+  state.highScore = parseInt(localStorage.getItem('snake_highscore')) || 0;
   updateHUD();
+
+  // Reset power-ups & visual effects
+  state.particles = [];
+  state.screenShake = 0;
+  state.spawnedPowerUp = null;
+  state.activePowerUp = null;
+  
+  if (state.gameLoopId) clearInterval(state.gameLoopId);
+  updatePowerUpHUD();
 
   // Spawn first fruit
   spawnFruit();
@@ -172,54 +210,139 @@ function checkSelfCollision(head) {
 function gameTick() {
   if (state.gameState !== GameStates.PLAYING) return;
 
-  // 1. Apply buffered direction
+  // 1. Handle spawned power-up despawn check
+  if (state.spawnedPowerUp && Date.now() >= state.spawnedPowerUp.despawnTime) {
+    state.spawnedPowerUp = null;
+  }
+
+  // 2. Handle active power-up timer countdown
+  if (state.activePowerUp) {
+    const currentTickSpeed = state.activePowerUp.id === 'freeze' 
+      ? POWERUP_TYPES.FREEZE.speed 
+      : (state.activePowerUp.id === 'gold' ? POWERUP_TYPES.GOLD.speed : CONFIG.GAME_SPEED);
+    
+    state.activePowerUp.timeLeft -= currentTickSpeed;
+    if (state.activePowerUp.timeLeft <= 0) {
+      deactivatePowerUp();
+    } else {
+      updatePowerUpHUD();
+    }
+  }
+
+  // 3. Apply buffered direction
   state.direction = { ...state.nextDirection };
 
-  // 2. Calculate new head position
+  // 4. Calculate new head position
   const head = state.snake[0];
   const newHead = {
     x: head.x + state.direction.x,
     y: head.y + state.direction.y,
   };
-  // 3. Check wall collision
+  
+  // 5. Check wall collision
   if (checkWallCollision(newHead)) {
     gameOver();
     return;
   }
 
-  // 4. Check self collision
+  // 6. Check self collision
   if (checkSelfCollision(newHead)) {
     gameOver();
     return;
   }
 
-  // 5. Check fruit collision
+  // 7. Check collision with spawned power-up
+  const atePowerUp = state.spawnedPowerUp && newHead.x === state.spawnedPowerUp.x && newHead.y === state.spawnedPowerUp.y;
+
+  if (atePowerUp) {
+    const powerUpType = state.spawnedPowerUp.type;
+    createExplosion(state.spawnedPowerUp.x, state.spawnedPowerUp.y, powerUpType.color, 25, true);
+    state.screenShake = 18;
+    
+    activatePowerUp(powerUpType);
+    state.spawnedPowerUp = null;
+  }
+
+  // 8. Check fruit collision
   const ateFruit = newHead.x === state.fruit.x && newHead.y === state.fruit.y;
 
   if (ateFruit) {
-    // Score based on fruit type (FR-005)
-    state.score += state.fruitType.score;
+    // Score based on fruit type (with 2x multiplier if Gold active)
+    const multiplier = (state.activePowerUp && state.activePowerUp.id === 'gold') ? 2 : 1;
+    state.score += state.fruitType.score * multiplier;
     triggerScorePop();
-  } else {
-    // Remove tail if no fruit eaten (FR-004)
+
+    // Increment fruits eaten
+    state.fruitsEatenThisMatch++;
+
+    // Check fruit achievements
+    if (typeof GameHubAchievements !== 'undefined') {
+      if (state.fruitsEatenThisMatch >= 10) {
+        GameHubAchievements.unlock('snake', 'hungry');
+      }
+      if (state.fruitsEatenThisMatch >= 50) {
+        GameHubAchievements.unlock('snake', 'hang');
+      }
+      if (state.fruitsEatenThisMatch >= 250) {
+        GameHubAchievements.unlock('snake', 'conqueror');
+      }
+      if (state.fruitsEatenThisMatch >= 1000) {
+        GameHubAchievements.unlock('snake', 'god');
+      }
+    }
+
+    // Update and persist high score in real-time
+    if (state.score > state.highScore) {
+      state.highScore = state.score;
+      localStorage.setItem('snake_highscore', state.highScore);
+    }
+
+    // Play satisfactory eating sound effect
+    playEatSound();
+
+    // Create explosion effect when eating (will check selected skin inside createExplosion)
+    createExplosion(state.fruit.x, state.fruit.y, state.fruitType.color, 15, false);
+    
+    // Slight screen shake for Gold Star fruit
+    if (state.fruitType === FRUIT_TYPES.STAR) {
+      state.screenShake = 12;
+    } else {
+      state.screenShake = 5;
+    }
+  } else if (!atePowerUp) {
+    // Remove tail if no fruit or power-up was eaten
     state.snake.pop();
   }
 
-  // 6. Add new head
+  // 9. Add new head
   state.snake.unshift(newHead);
 
-  // 7. Check victory (FR-009)
+  // 10. Spawn particles trail for active powerups
+  if (state.activePowerUp && Math.random() < 0.45) {
+    const tailSeg = state.snake[state.snake.length - 1];
+    createExplosion(tailSeg.x, tailSeg.y, state.activePowerUp.color, 1, true);
+  }
+
+  // 11. Check victory (FR-009)
   if (state.snake.length >= TOTAL_CELLS) {
     victory();
     return;
   }
 
-  // 8. Spawn new fruit after eating
+  // 12. Spawn new fruit & try to spawn a power-up
   if (ateFruit) {
     spawnFruit();
+    trySpawnPowerUp();
   }
 
-  // 9. Update HUD
+  // Check survival time achievement (2 minutes = 120,000 ms)
+  if (state.matchStartTime && Date.now() - state.matchStartTime >= 120000) {
+    if (typeof GameHubAchievements !== 'undefined') {
+      GameHubAchievements.unlock('snake', 'survivor');
+    }
+  }
+
+  // 13. Update HUD
   updateHUD();
 }
 
@@ -233,11 +356,33 @@ function renderLoop(timestamp) {
   // Update fruit pulse animation
   state.fruitPulse = (timestamp || 0) * 0.003;
 
+  // Update particles
+  for (let i = state.particles.length - 1; i >= 0; i--) {
+    state.particles[i].update();
+    if (state.particles[i].alpha <= 0) {
+      state.particles.splice(i, 1);
+    }
+  }
+
+  // Decay screen shake
+  if (state.screenShake > 0) {
+    state.screenShake *= 0.88;
+    if (state.screenShake < 0.3) state.screenShake = 0;
+  }
+
   render();
 }
 
 function render() {
   const { CELL_SIZE, GRID_SIZE, CANVAS_SIZE } = CONFIG;
+
+  ctx.save();
+  // Apply Screen Shake
+  if (state.screenShake > 0.5) {
+    const dx = (Math.random() - 0.5) * state.screenShake;
+    const dy = (Math.random() - 0.5) * state.screenShake;
+    ctx.translate(dx, dy);
+  }
 
   // Clear canvas
   ctx.clearRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
@@ -257,9 +402,23 @@ function render() {
     ctx.stroke();
   }
 
+  // ─── Draw Particles ───
+  state.particles.forEach(p => p.draw(ctx));
+
   // ─── Draw Snake ───
   const snakeLen = state.snake.length;
-  const skin = SKINS[state.selectedSkin];
+  let skin = { ...SKINS[state.selectedSkin] };
+  if (state.activePowerUp) {
+    if (state.activePowerUp.id === 'freeze') {
+      skin.head = '#00f0ff';
+      skin.bodyStart = '#38bdf8';
+      skin.bodyEnd = '#1e3a8a';
+    } else if (state.activePowerUp.id === 'gold') {
+      skin.head = '#facc15';
+      skin.bodyStart = '#facc15';
+      skin.bodyEnd = '#854d0e';
+    }
+  }
 
   for (let i = snakeLen - 1; i >= 0; i--) {
     const seg = state.snake[i];
@@ -305,6 +464,50 @@ function render() {
   ctx.shadowBlur = 0;
   ctx.shadowColor = 'transparent';
 
+  // ─── Draw Spawned Power-Up ───
+  if (state.spawnedPowerUp) {
+    const p = state.spawnedPowerUp;
+    const ppx = p.x * CELL_SIZE + CELL_SIZE / 2;
+    const ppy = p.y * CELL_SIZE + CELL_SIZE / 2;
+    const pRadius = CELL_SIZE * 0.38;
+    const pulseScale = 1 + Math.sin(state.fruitPulse * 1.5) * 0.1;
+
+    // Blink if time is running out (less than 2.5 seconds remaining)
+    const timeLeft = p.despawnTime - Date.now();
+    let drawIt = true;
+    if (timeLeft < 2500) {
+      drawIt = Math.floor(timeLeft / 150) % 2 === 0;
+    }
+
+    if (drawIt) {
+      ctx.save();
+      // Glow
+      ctx.shadowColor = p.type.color;
+      ctx.shadowBlur = 15 + Math.sin(state.fruitPulse * 1.5) * 8;
+      
+      // Draw orb
+      ctx.fillStyle = p.type.color;
+      ctx.beginPath();
+      ctx.arc(ppx, ppy, pRadius * pulseScale, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Inner glass
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
+      ctx.beginPath();
+      ctx.arc(ppx, ppy, pRadius * 0.8 * pulseScale, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Draw Icon
+      ctx.shadowBlur = 0;
+      ctx.fillStyle = '#ffffff';
+      ctx.font = `${Math.floor(CELL_SIZE * 0.45 * pulseScale)}px Arial`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(p.type.icon, ppx, ppy + 1);
+      ctx.restore();
+    }
+  }
+
   // ─── Draw Fruit ───
   const fpx = state.fruit.x * CELL_SIZE + CELL_SIZE / 2;
   const fpy = state.fruit.y * CELL_SIZE + CELL_SIZE / 2;
@@ -322,8 +525,8 @@ function render() {
     // Draw Star
     drawStar(fpx, fpy, 5, fruitRadius * pulseScale, fruitRadius * 0.45 * pulseScale);
   } else if (state.fruitType === FRUIT_TYPES.GRAPE) {
-    // Draw Grape Cluster (overlapping small circles)
-    ctx.shadowBlur = 0; // reset for individual grapes
+    // Draw Grape Cluster
+    ctx.shadowBlur = 0;
     ctx.beginPath();
     ctx.arc(fpx - 3, fpy - 3, fruitRadius * 0.5 * pulseScale, 0, Math.PI * 2);
     ctx.arc(fpx + 3, fpy - 3, fruitRadius * 0.5 * pulseScale, 0, Math.PI * 2);
@@ -360,6 +563,8 @@ function render() {
     ctx.lineTo(fpx + 3, fpy - fruitRadius * pulseScale - 6);
     ctx.stroke();
   }
+
+  ctx.restore();
 }
 
 function drawRoundedRect(x, y, w, h, r) {
@@ -384,8 +589,11 @@ function drawSnakeEyes(head) {
   const cx = px + CELL_SIZE / 2;
   const cy = py + CELL_SIZE / 2;
 
+  const currentSkin = SKINS[state.selectedSkin] || SKINS.classic;
+  const char = currentSkin.char;
+
   const eyeOffset = 5;
-  const eyeRadius = 3;
+  const eyeRadius = char === 'cacing' ? 2.5 : 3;
   const pupilRadius = 1.5;
 
   let eye1, eye2;
@@ -406,23 +614,50 @@ function drawSnakeEyes(head) {
     eye2 = { x: cx + eyeOffset, y: cy + 5 };
   }
 
-  // Draw eye whites
-  ctx.fillStyle = '#ffffff';
+  let eyeColor = '#ffffff';
+  let pupilColor = '#0a0a1a';
+  let isGlow = false;
+
+  if (char === 'naga') {
+    eyeColor = currentSkin.head === '#00f0ff' ? '#ffffff' : '#ffe600';
+    pupilColor = currentSkin.head;
+    isGlow = true;
+  } else if (char === 'cacing') {
+    eyeColor = '#1a0d00';
+    pupilColor = '#1a0d00';
+  }
+
+  // Draw eye whites/outer eyes
+  ctx.save();
+  if (isGlow) {
+    ctx.shadowColor = eyeColor;
+    ctx.shadowBlur = 6;
+  }
+  ctx.fillStyle = eyeColor;
   ctx.beginPath();
   ctx.arc(eye1.x, eye1.y, eyeRadius, 0, Math.PI * 2);
   ctx.fill();
   ctx.beginPath();
   ctx.arc(eye2.x, eye2.y, eyeRadius, 0, Math.PI * 2);
   ctx.fill();
+  ctx.restore();
 
-  // Draw pupils
-  ctx.fillStyle = '#0a0a1a';
-  ctx.beginPath();
-  ctx.arc(eye1.x + dir.x * 1, eye1.y + dir.y * 1, pupilRadius, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.beginPath();
-  ctx.arc(eye2.x + dir.x * 1, eye2.y + dir.y * 1, pupilRadius, 0, Math.PI * 2);
-  ctx.fill();
+  // Draw pupils (worms don't have pupils, they just have beady eyes)
+  if (char !== 'cacing') {
+    ctx.save();
+    if (isGlow) {
+      ctx.shadowColor = pupilColor;
+      ctx.shadowBlur = 4;
+    }
+    ctx.fillStyle = pupilColor;
+    ctx.beginPath();
+    ctx.arc(eye1.x + dir.x * 0.8, eye1.y + dir.y * 0.8, pupilRadius, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(eye2.x + dir.x * 0.8, eye2.y + dir.y * 0.8, pupilRadius, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  }
 }
 
 // ═══════════════════════════════════════════════════════
@@ -432,6 +667,7 @@ function drawSnakeEyes(head) {
 function updateHUD() {
   DOM.hudScore.textContent = state.score;
   DOM.hudLength.textContent = state.snake.length;
+  DOM.hudHighscore.textContent = state.highScore;
 }
 
 function triggerScorePop() {
@@ -448,6 +684,10 @@ function triggerScorePop() {
 function startGame() {
   // Initialize game state
   initGame();
+
+  // Reset match achievements trackers
+  state.fruitsEatenThisMatch = 0;
+  state.matchStartTime = Date.now();
 
   // Switch to game screen
   showScreen('game-screen');
@@ -479,6 +719,8 @@ function gameOver() {
     state.gameLoopId = null;
   }
 
+  deactivatePowerUp();
+
   // Update modal score
   DOM.gameoverScore.textContent = state.score;
 
@@ -493,6 +735,13 @@ function victory() {
   if (state.gameLoopId) {
     clearInterval(state.gameLoopId);
     state.gameLoopId = null;
+  }
+
+  deactivatePowerUp();
+
+  // Unlock flawless run
+  if (typeof GameHubAchievements !== 'undefined') {
+    GameHubAchievements.unlock('snake', 'flawless');
   }
 
   // Update modal score
@@ -513,6 +762,8 @@ function restartGame() {
     state.animationFrameId = null;
   }
 
+  deactivatePowerUp();
+
   // Hide modals
   hideModal('gameover-modal');
   hideModal('victory-modal');
@@ -532,7 +783,13 @@ function togglePause() {
   } else if (state.gameState === GameStates.PAUSED) {
     state.gameState = GameStates.PLAYING;
     hideModal('pause-overlay');
-    state.gameLoopId = setInterval(gameTick, CONFIG.GAME_SPEED);
+    
+    // Resume with the correct speed if a power-up is currently active
+    const currentSpeed = (state.activePowerUp && state.activePowerUp.speed) 
+      ? state.activePowerUp.speed 
+      : CONFIG.GAME_SPEED;
+      
+    state.gameLoopId = setInterval(gameTick, currentSpeed);
   }
 }
 
@@ -576,6 +833,9 @@ const KEY_MAP = {
 };
 
 document.addEventListener('keydown', (e) => {
+  // Initialize or resume AudioContext on user input to follow browser autoplay policies
+  initAudio();
+
   const code = e.code;
 
   // ─── Movement keys ───
@@ -628,13 +888,63 @@ document.addEventListener('keydown', (e) => {
 // BUTTON EVENT BINDINGS
 // ═══════════════════════════════════════════════════════
 
-DOM.btnStart.addEventListener('click', startGame);
-DOM.btnRestart.addEventListener('click', restartGame);
-DOM.btnPlayAgain.addEventListener('click', restartGame);
+DOM.btnStart.addEventListener('click', () => {
+  initAudio();
+  startGame();
+});
+DOM.btnRestart.addEventListener('click', () => {
+  initAudio();
+  restartGame();
+});
+DOM.btnPlayAgain.addEventListener('click', () => {
+  initAudio();
+  restartGame();
+});
 
 // ═══════════════════════════════════════════════════════
 // STARTUP
 // ═══════════════════════════════════════════════════════
+
+// ─── Sound System (Web Audio API) ───
+let audioCtx = null;
+
+function initAudio() {
+  if (!audioCtx) {
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    if (AudioContext) {
+      audioCtx = new AudioContext();
+    }
+  }
+  if (audioCtx && audioCtx.state === 'suspended') {
+    audioCtx.resume();
+  }
+}
+
+function playEatSound() {
+  initAudio();
+  if (!audioCtx) return;
+
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  
+  osc.connect(gain);
+  gain.connect(audioCtx.destination);
+  
+  // Retro arcade triangle wave sound
+  osc.type = 'triangle';
+  
+  const startTime = audioCtx.currentTime;
+  // Sweep frequency upward from 160Hz to 750Hz in 0.12s
+  osc.frequency.setValueAtTime(160, startTime);
+  osc.frequency.exponentialRampToValueAtTime(750, startTime + 0.12);
+  
+  // Rapid gain volume decay
+  gain.gain.setValueAtTime(0.18, startTime);
+  gain.gain.exponentialRampToValueAtTime(0.01, startTime + 0.12);
+  
+  osc.start(startTime);
+  osc.stop(startTime + 0.12);
+}
 
 // ─── Helpers ───
 function getGradientColor(colorStart, colorEnd, t) {
@@ -674,18 +984,72 @@ function drawStar(cx, cy, spikes, outerRadius, innerRadius) {
   ctx.fill();
 }
 
-// ─── Skin Selection Handlers ───
-document.querySelectorAll('.skin-opt').forEach((btn) => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.skin-opt').forEach(opt => opt.classList.remove('active'));
-    btn.classList.add('active');
+// ─── Character & Skin Selection Handlers ───
+function renderSkinSelector(charId) {
+  const container = document.getElementById('skin-options');
+  if (!container) return;
+
+  // Clear current options
+  container.innerHTML = '';
+
+  // Find all skins for this character
+  const skinKeys = Object.keys(SKINS).filter(key => SKINS[key].char === charId);
+  
+  skinKeys.forEach((key, idx) => {
+    const skin = SKINS[key];
     
-    state.selectedSkin = btn.dataset.skin;
-    
-    const skin = SKINS[state.selectedSkin];
-    const nameEl = document.getElementById('selected-skin-name');
+    // Create button element
+    const btn = document.createElement('button');
+    btn.className = `skin-opt${key === state.selectedSkin ? ' active' : ''}`;
+    btn.dataset.skin = key;
+    btn.type = 'button';
+    btn.title = skin.name;
+
+    // Create preview element
+    const span = document.createElement('span');
+    span.className = `skin-preview skin-preview--${key}`;
+    btn.appendChild(span);
+
+    // Event listener
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.skin-opt').forEach(opt => opt.classList.remove('active'));
+      btn.classList.add('active');
+      
+      state.selectedSkin = key;
+      updateSkinDisplay();
+    });
+
+    container.appendChild(btn);
+  });
+}
+
+function updateSkinDisplay() {
+  const skin = SKINS[state.selectedSkin];
+  if (!skin) return;
+
+  const nameEl = document.getElementById('selected-skin-name');
+  if (nameEl) {
     nameEl.textContent = skin.name;
     nameEl.style.color = skin.head;
+  }
+}
+
+// Bind character selection buttons
+document.querySelectorAll('.char-opt').forEach((btn) => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.char-opt').forEach(opt => opt.classList.remove('active'));
+    btn.classList.add('active');
+    
+    state.selectedCharacter = btn.dataset.char;
+    
+    // Auto-select first skin of the chosen character
+    const matchingSkins = Object.keys(SKINS).filter(key => SKINS[key].char === state.selectedCharacter);
+    if (matchingSkins.length > 0) {
+      state.selectedSkin = matchingSkins[0];
+    }
+
+    renderSkinSelector(state.selectedCharacter);
+    updateSkinDisplay();
   });
 });
 
@@ -718,3 +1082,307 @@ bindMobileButton('ctrl-right', { x: 1, y: 0 });
 
 // Show menu on load
 showScreen('menu-screen');
+
+// Initialize Character & Skin selectors
+renderSkinSelector(state.selectedCharacter);
+updateSkinDisplay();
+
+// ═══════════════════════════════════════════════════════
+// NEW CLASSES & HELPER FUNCTIONS FOR POWER-UPS
+// ═══════════════════════════════════════════════════════
+
+class Particle {
+  constructor(x, y, color) {
+    this.x = x;
+    this.y = y;
+    this.vx = (Math.random() - 0.5) * 6;
+    this.vy = (Math.random() - 0.5) * 6;
+    this.color = color;
+    this.alpha = 1.0;
+    this.decay = Math.random() * 0.04 + 0.02;
+    this.size = Math.random() * 4 + 2;
+  }
+
+  update() {
+    this.x += this.vx;
+    this.y += this.vy;
+    this.alpha -= this.decay;
+  }
+
+  draw(ctx) {
+    ctx.save();
+    ctx.globalAlpha = this.alpha;
+    ctx.fillStyle = this.color;
+    ctx.shadowColor = this.color;
+    ctx.shadowBlur = 8;
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  }
+}
+
+class FireParticle {
+  constructor(x, y, colorHead, colorBody) {
+    this.x = x;
+    this.y = y;
+    // Fire particles fly upwards and slightly outwards
+    this.vx = (Math.random() - 0.5) * 4;
+    this.vy = -Math.random() * 4 - 1; // Always upward speed
+    this.alpha = 1.0;
+    this.decay = Math.random() * 0.03 + 0.02; // lasts about 30-50 frames
+    this.size = Math.random() * 6 + 4; // slightly larger than default
+    this.initialSize = this.size;
+    this.colorHead = colorHead;
+    this.colorBody = colorBody;
+  }
+
+  update() {
+    this.x += this.vx;
+    this.y += this.vy;
+    // Shrink over time
+    this.size = Math.max(0, this.initialSize * this.alpha);
+    this.alpha -= this.decay;
+    // Flame drift
+    this.vx += (Math.random() - 0.5) * 0.2;
+  }
+
+  draw(ctx) {
+    ctx.save();
+    ctx.globalAlpha = this.alpha;
+    
+    // Elemental fire gradient
+    let color;
+    if (this.alpha > 0.75) {
+      color = '#ffffff'; // Hot core
+    } else if (this.alpha > 0.45) {
+      color = this.colorHead;
+    } else if (this.alpha > 0.15) {
+      color = this.colorBody;
+    } else {
+      color = '#3c3c3c'; // Smoke
+    }
+    
+    ctx.fillStyle = color;
+    ctx.shadowColor = color;
+    ctx.shadowBlur = 10;
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  }
+}
+
+class EarthParticle {
+  constructor(x, y, skinId) {
+    this.x = x;
+    this.y = y;
+    // Earth particles burst outwards and fall due to gravity
+    this.vx = (Math.random() - 0.5) * 5;
+    this.vy = (Math.random() - 0.6) * 5; // initially slightly upward or outward
+    this.gravity = 0.18; // Pull down
+    this.alpha = 1.0;
+    this.decay = Math.random() * 0.02 + 0.015; // last slightly longer
+    this.size = Math.random() * 5 + 2;
+    
+    // Choose earth tone palettes depending on the skin ID
+    let colors;
+    if (skinId === 'cacing_sand') {
+      colors = ['#784f23', '#9c6f3d', '#b88a51', '#d9a05b', '#e9c497'];
+    } else if (skinId === 'cacing_grub') {
+      colors = ['#8c6d7a', '#a68292', '#bf9ba8', '#d9b5c3', '#e8c5d3'];
+    } else { // default earth worm (cacing_earth)
+      colors = ['#573315', '#6e473b', '#82522c', '#a87043', '#cd853f'];
+    }
+    
+    this.color = colors[Math.floor(Math.random() * colors.length)];
+    this.isRock = Math.random() > 0.4;
+    this.rotation = Math.random() * Math.PI * 2;
+    this.rotSpeed = (Math.random() - 0.5) * 0.15;
+  }
+
+  update() {
+    this.vy += this.gravity; // Gravity pull!
+    this.x += this.vx;
+    this.y += this.vy;
+    this.rotation += this.rotSpeed;
+    this.alpha -= this.decay;
+  }
+
+  draw(ctx) {
+    ctx.save();
+    ctx.globalAlpha = this.alpha;
+    ctx.fillStyle = this.color;
+    
+    // Soil has zero glow (matte)
+    ctx.shadowBlur = 0;
+    ctx.shadowColor = 'transparent';
+    
+    ctx.translate(this.x, this.y);
+    ctx.rotate(this.rotation);
+    
+    ctx.beginPath();
+    if (this.isRock) {
+      // Draw a small debris chunk (square/rect)
+      ctx.rect(-this.size/2, -this.size/2, this.size, this.size);
+    } else {
+      // Draw a small dirt clump (circle)
+      ctx.arc(0, 0, this.size, 0, Math.PI * 2);
+    }
+    ctx.fill();
+    ctx.restore();
+  }
+}
+
+function createExplosion(gridX, gridY, color, count = 15, forceDefault = false) {
+  const { CELL_SIZE } = CONFIG;
+  const cx = gridX * CELL_SIZE + CELL_SIZE / 2;
+  const cy = gridY * CELL_SIZE + CELL_SIZE / 2;
+  
+  const currentSkin = SKINS[state.selectedSkin] || SKINS.classic;
+  const char = currentSkin.char;
+
+  for (let i = 0; i < count; i++) {
+    if (!forceDefault && char === 'naga') {
+      state.particles.push(new FireParticle(cx, cy, currentSkin.head, currentSkin.bodyStart));
+    } else if (!forceDefault && char === 'cacing') {
+      state.particles.push(new EarthParticle(cx, cy, state.selectedSkin));
+    } else {
+      state.particles.push(new Particle(cx, cy, color));
+    }
+  }
+}
+
+function trySpawnPowerUp() {
+  if (state.spawnedPowerUp || state.gameState !== GameStates.PLAYING) return;
+  
+  // 20% spawn probability
+  if (Math.random() > 0.20) return;
+
+  // Build list of occupied grid cells (snake + fruit)
+  const occupied = new Set();
+  for (const seg of state.snake) {
+    occupied.add(`${seg.x},${seg.y}`);
+  }
+  occupied.add(`${state.fruit.x},${state.fruit.y}`);
+
+  // Find all remaining empty cells
+  const available = [];
+  for (let x = 0; x < CONFIG.GRID_SIZE; x++) {
+    for (let y = 0; y < CONFIG.GRID_SIZE; y++) {
+      if (!occupied.has(`${x},${y}`)) {
+        available.push({ x, y });
+      }
+    }
+  }
+
+  if (available.length === 0) return;
+
+  // Pick random position
+  const idx = Math.floor(Math.random() * available.length);
+  const pos = available[idx];
+
+  // Pick random powerup type
+  const keys = Object.keys(POWERUP_TYPES);
+  const randKey = keys[Math.floor(Math.random() * keys.length)];
+  const type = POWERUP_TYPES[randKey];
+
+  state.spawnedPowerUp = {
+    x: pos.x,
+    y: pos.y,
+    type: type,
+    despawnTime: Date.now() + 8000 // Lasts 8 seconds on grid
+  };
+}
+
+function activatePowerUp(type) {
+  // Clear any existing active power-up first
+  if (state.activePowerUp) {
+    deactivatePowerUp();
+  }
+
+  if (type.id === 'shrink') {
+    // SHRINK is an instant effect
+    const originalLength = state.snake.length;
+    const newLength = Math.max(CONFIG.INITIAL_LENGTH, Math.floor(originalLength / 2));
+    
+    // Create explosion for sliced off segments
+    for (let i = newLength; i < originalLength; i++) {
+      if (state.snake[i]) {
+        createExplosion(state.snake[i].x, state.snake[i].y, type.color, 6, true);
+      }
+    }
+    
+    state.snake = state.snake.slice(0, newLength);
+    state.screenShake = 16;
+    updateHUD();
+    return;
+  }
+
+  // Active status for Freeze and Gold
+  state.activePowerUp = {
+    id: type.id,
+    name: type.name,
+    icon: type.icon,
+    color: type.color,
+    timeLeft: type.duration,
+    totalDuration: type.duration,
+    speed: type.speed
+  };
+
+  // Set the modified game speed ticks
+  adjustGameSpeed(type.speed);
+  updatePowerUpHUD();
+}
+
+function deactivatePowerUp() {
+  if (!state.activePowerUp) return;
+
+  state.activePowerUp = null;
+  resetGameSpeed();
+  updatePowerUpHUD();
+}
+
+function adjustGameSpeed(speed) {
+  if (state.gameLoopId) {
+    clearInterval(state.gameLoopId);
+  }
+  state.gameLoopId = setInterval(gameTick, speed);
+}
+
+function resetGameSpeed() {
+  if (state.gameLoopId) {
+    clearInterval(state.gameLoopId);
+  }
+  state.gameLoopId = setInterval(gameTick, CONFIG.GAME_SPEED);
+}
+
+const DOM_POWERUP = {
+  hud: null,
+  icon: null,
+  name: null,
+  progressBar: null
+};
+
+function updatePowerUpHUD() {
+  if (!DOM_POWERUP.hud) {
+    DOM_POWERUP.hud = document.getElementById('powerup-hud');
+    DOM_POWERUP.icon = document.getElementById('powerup-icon');
+    DOM_POWERUP.name = document.getElementById('powerup-name');
+    DOM_POWERUP.progressBar = document.getElementById('powerup-progress-bar');
+  }
+
+  if (!DOM_POWERUP.hud) return;
+
+  if (state.activePowerUp) {
+    DOM_POWERUP.icon.textContent = state.activePowerUp.icon;
+    DOM_POWERUP.name.textContent = state.activePowerUp.name;
+    
+    DOM_POWERUP.hud.className = `powerup-hud active ${state.activePowerUp.id}`;
+    
+    const pct = Math.max(0, (state.activePowerUp.timeLeft / state.activePowerUp.totalDuration) * 100);
+    DOM_POWERUP.progressBar.style.width = `${pct}%`;
+  } else {
+    DOM_POWERUP.hud.className = 'powerup-hud hidden';
+  }
+}

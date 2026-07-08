@@ -12,5 +12,23 @@ const gamesConfig = [
     path: "games/Snake/index.html",
     category: "Retro Arcade",
     author: "Developer Komunitas"
+  },
+  {
+    id: "fishing-frenzy",
+    title: "Fishing Frenzy",
+    description: "Turunkan kail pancing Anda ke laut dalam, tangkap berbagai ikan neon eksotis, hindari bom bawah laut, dan raih skor tertinggi dengan 3 nyawa!",
+    thumbnail: "assets/images/thumbnails/fishing.png",
+    path: "games/FishingFrenzy/index.html",
+    category: "Arcade Action",
+    author: "Developer Komunitas"
+  },
+  {
+    id: "zombie-attack",
+    title: "Zombie Attack",
+    description: "Bertahan hidup di kompleks sekolah dari kepungan zombie! Kalahkan boss setiap 5 wave, lakukan gacha skill elemen acak, dan upgrade senjata Anda dengan ZCoin!",
+    thumbnail: "assets/images/thumbnails/zombie.png",
+    path: "games/ZombieAttack/index.html",
+    category: "Survival Shooter",
+    author: "Developer Komunitas"
   }
 ];

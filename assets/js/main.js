@@ -2,6 +2,14 @@
 
 document.addEventListener('DOMContentLoaded', () => {
   renderGames();
+  setupUpdateLogModal();
+  setupAchievementsModal();
+  checkAchievementsActivation();
+});
+
+// Refresh achievements system button state when returning to this page
+window.addEventListener('focus', () => {
+  checkAchievementsActivation();
 });
 
 /**
@@ -88,5 +96,166 @@ function renderGames() {
     });
     
     gridContainer.appendChild(card);
+  });
+}
+
+/**
+ * Sets up event listeners for opening and closing the Update Log modal.
+ */
+function setupUpdateLogModal() {
+  const modal = document.getElementById('update-log-modal');
+  const openModalBtn = document.getElementById('btn-update-log');
+  
+  if (!modal || !openModalBtn) {
+    console.warn('Update log modal or button not found in the DOM.');
+    return;
+  }
+  
+  const closeModalBtns = [
+    document.getElementById('modal-close-btn'),
+    document.getElementById('modal-close-footer'),
+    modal.querySelector('.modal-overlay')
+  ];
+
+  // Open modal
+  openModalBtn.addEventListener('click', () => {
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden'; // Disable scroll under overlay
+    modal.setAttribute('aria-hidden', 'false');
+  });
+
+  // Close modal with close buttons
+  closeModalBtns.forEach(btn => {
+    if (btn) {
+      btn.addEventListener('click', () => {
+        modal.classList.remove('active');
+        document.body.style.overflow = ''; // Restore scroll
+        modal.setAttribute('aria-hidden', 'true');
+      });
+    }
+  });
+
+  // Close modal on Escape key press
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && modal.classList.contains('active')) {
+      modal.classList.remove('active');
+      document.body.style.overflow = '';
+      modal.setAttribute('aria-hidden', 'true');
+    }
+  });
+}
+
+/**
+ * Checks if the achievements system has been activated and shows the menu button.
+ */
+function checkAchievementsActivation() {
+  const btn = document.getElementById('btn-achievements');
+  if (!btn) return;
+  
+  const isActivated = localStorage.getItem('achievements_activated') === 'true';
+  if (isActivated) {
+    btn.style.display = 'flex';
+  } else {
+    btn.style.display = 'none';
+  }
+}
+
+/**
+ * Sets up event listeners for opening and closing the Achievements modal.
+ */
+function setupAchievementsModal() {
+  const modal = document.getElementById('achievements-modal');
+  const openModalBtn = document.getElementById('btn-achievements');
+  
+  if (!modal || !openModalBtn) return;
+  
+  const closeModalBtns = [
+    document.getElementById('achievements-close-btn'),
+    document.getElementById('achievements-close-footer'),
+    modal.querySelector('.modal-overlay')
+  ];
+
+  // Open modal
+  openModalBtn.addEventListener('click', () => {
+    renderAchievements(); // Refresh list on open
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+    modal.setAttribute('aria-hidden', 'false');
+  });
+
+  // Close modal with close buttons
+  closeModalBtns.forEach(btn => {
+    if (btn) {
+      btn.addEventListener('click', () => {
+        modal.classList.remove('active');
+        document.body.style.overflow = '';
+        modal.setAttribute('aria-hidden', 'true');
+      });
+    }
+  });
+
+  // Close modal on Escape key press
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && modal.classList.contains('active')) {
+      modal.classList.remove('active');
+      document.body.style.overflow = '';
+      modal.setAttribute('aria-hidden', 'true');
+    }
+  });
+}
+
+/**
+ * Renders the achievements categorized by game in a premium grid layout.
+ */
+function renderAchievements() {
+  const container = document.getElementById('achievements-content');
+  if (!container || typeof GameHubAchievements === 'undefined') return;
+  
+  container.innerHTML = '';
+  
+  const games = [
+    { id: 'snake', title: '🐍 Snake Game' },
+    { id: 'fishing', title: '🎣 Fishing Frenzy' },
+    { id: 'zombie', title: '🧟 Zombie Attack' }
+  ];
+  
+  games.forEach(game => {
+    const list = GameHubAchievements.data[game.id];
+    if (!list) return;
+    
+    const categorySec = document.createElement('div');
+    categorySec.className = 'achievement-category';
+    
+    // Count unlocked achievements
+    const unlockedCount = list.filter(ach => GameHubAchievements.isUnlocked(game.id, ach.id)).length;
+    
+    categorySec.innerHTML = `
+      <h3 class="achievement-category-title">
+        ${game.title}
+        <span>${unlockedCount}/${list.length} Terbuka</span>
+      </h3>
+      <div class="achievements-grid"></div>
+    `;
+    
+    const grid = categorySec.querySelector('.achievements-grid');
+    
+    list.forEach(ach => {
+      const isUnlocked = GameHubAchievements.isUnlocked(game.id, ach.id);
+      const card = document.createElement('div');
+      card.className = `achievement-card ${isUnlocked ? 'unlocked' : 'locked'}`;
+      
+      card.innerHTML = `
+        <div class="achievement-card-icon">${isUnlocked ? ach.icon : '🔒'}</div>
+        <div class="achievement-card-info">
+          <div class="achievement-card-title">${ach.title}</div>
+          <div class="achievement-card-desc">${isUnlocked ? ach.desc : 'Pencapaian rahasia. Mainkan game untuk membuka.'}</div>
+          <div class="achievement-card-status">${isUnlocked ? 'Terbuka' : 'Terkunci'}</div>
+        </div>
+      `;
+      
+      grid.appendChild(card);
+    });
+    
+    container.appendChild(categorySec);
   });
 }

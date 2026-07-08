@@ -39,12 +39,26 @@
         Main game kasual instan <span class="tagline-highlight">tanpa akun & tanpa password</span>.
         Buka halaman, pilih game favoritmu, dan langsung mainkan!
       </p>
+      <div class="header-actions">
+        <button id="btn-update-log" class="btn-outline" aria-label="Buka Catatan Pembaruan">
+          <span class="btn-icon">📋</span> Catatan Pembaruan
+        </button>
+        <button id="btn-achievements" class="btn-outline" style="display: none;" aria-label="Buka Menu Pencapaian">
+          <span class="btn-icon">🏆</span> Pencapaian
+        </button>
+      </div>
     </div>
   </header>
 
   <!-- Main Content Area -->
   <main>
     <div class="container">
+
+      <!-- Beta Mode Banner -->
+      <section class="beta-banner" aria-label="Status Beta">
+        <span class="beta-banner-icon">🧪</span>
+        <p><strong>Mode Beta:</strong> GameHub sedang dalam tahap uji coba (Beta). Beberapa bug mungkin muncul selama Anda bermain. Terima kasih atas pengertiannya!</p>
+      </section>
 
       <!-- Info Banner / Frictionless Alert -->
       <section class="info-banner" aria-label="Informasi Kemudahan">
@@ -82,9 +96,92 @@
     </div>
   </footer>
 
+  <!-- Update Log Modal -->
+  <div id="update-log-modal" class="modal" aria-hidden="true" role="dialog" aria-labelledby="modal-title">
+    <div class="modal-overlay" tabindex="-1"></div>
+    <div class="modal-container">
+      <div class="modal-header">
+        <h2 id="modal-title" class="modal-title">📋 Catatan Pembaruan (Update Log)</h2>
+        <button id="modal-close-btn" class="modal-close" aria-label="Tutup">&times;</button>
+      </div>
+      <div class="modal-body">
+        
+        <!-- Update Item 1 -->
+        <div class="update-item">
+          <div class="update-meta">
+            <span class="update-version badge-latest">v1.2.0</span>
+            <span class="update-date">8 Juli 2026</span>
+          </div>
+          <h3 class="update-title">🧟 Zombie Attack - Wave & Upgrade Update</h3>
+          <ul class="update-list">
+            <li>Menambahkan Boss Fight tangguh di setiap kelipatan 5 wave.</li>
+            <li>Implementasi sistem <strong>Gacha Skill Elemen</strong> acak (Api, Es, Petir) untuk kekuatan karakter.</li>
+            <li>Menambahkan mata uang <strong>ZCoin</strong> yang didapatkan dari mengalahkan zombie untuk upgrade senjata.</li>
+            <li>Perbaikan deteksi tabrakan (hitbox) dan peningkatan performa rendering grafis.</li>
+          </ul>
+        </div>
+
+        <!-- Update Item 2 -->
+        <div class="update-item">
+          <div class="update-meta">
+            <span class="update-version">v1.1.0</span>
+            <span class="update-date">5 Juli 2026</span>
+          </div>
+          <h3 class="update-title">🎣 Fishing Frenzy - Ocean Danger Update</h3>
+          <ul class="update-list">
+            <li>Menambahkan rintangan <strong>Bom Laut</strong> yang berbahaya dan mengurangi nyawa.</li>
+            <li>Menambahkan berbagai variasi ikan baru dengan kecepatan dan nilai skor berbeda.</li>
+            <li>Implementasi sistem <strong>3 Nyawa (Lives)</strong> dengan panel status UI di atas layar.</li>
+            <li>Peningkatan animasi tali pancing dan transisi efek air.</li>
+          </ul>
+        </div>
+
+        <!-- Update Item 3 -->
+        <div class="update-item">
+          <div class="update-meta">
+            <span class="update-version">v1.0.0</span>
+            <span class="update-date">1 Juli 2026</span>
+          </div>
+          <h3 class="update-title">🚀 Peluncuran Awal GameHub Beta</h3>
+          <ul class="update-list">
+            <li>Peluncuran resmi GameHub dengan <strong>Snake Game</strong> sebagai game pertama.</li>
+            <li>Sistem penyimpanan skor tertinggi lokal (Highscore) menggunakan LocalStorage.</li>
+            <li>Desain antarmuka responsif ramah seluler dengan tema gelap premium dan aksen neon.</li>
+            <li>Infrastruktur server lokal mandiri tanpa ketergantungan eksternal.</li>
+          </ul>
+        </div>
+
+      </div>
+      <div class="modal-footer">
+        <button id="modal-close-footer" class="btn-play">Tutup Halaman</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Achievements Modal -->
+  <div id="achievements-modal" class="modal" aria-hidden="true" role="dialog" aria-labelledby="achievements-title">
+    <div class="modal-overlay" tabindex="-1"></div>
+    <div class="modal-container">
+      <div class="modal-header">
+        <h2 id="achievements-title" class="modal-title">🏆 Pencapaian Saya (Achievements)</h2>
+        <button id="achievements-close-btn" class="modal-close" aria-label="Tutup">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div id="achievements-content" class="achievements-content">
+          <!-- Populated via Javascript -->
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="achievements-close-footer" class="btn-play">Tutup Halaman</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Scripts -->
   <!-- gamesConfig loaded first to expose the catalog database -->
   <script src="games-config.js"></script>
+  <!-- achievements system loaded before main scripts -->
+  <script src="assets/js/achievements.js"></script>
   <!-- mainJS script loads and renders the UI -->
   <script src="assets/js/main.js"></script>
 </body>

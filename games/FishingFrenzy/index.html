@@ -1,12 +1,10 @@
 <!DOCTYPE html>
 <html lang="id">
-
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description"
-    content="Snake — Game klasik berbasis web. Kendalikan ular, makan buah, dan raih skor tertinggi!">
-  <title>Snake Game</title>
+  <meta name="description" content="Fishing Frenzy — Tangkap ikan neon eksotis di laut dalam, hindari bom bawah laut, dan raih skor tertinggi dengan 5 nyawa!">
+  <title>Fishing Frenzy</title>
 
   <!-- Google Fonts: Inter -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -15,7 +13,6 @@
 
   <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
   <div id="app">
 
@@ -25,61 +22,28 @@
     <div id="menu-screen" class="screen active">
       <div class="menu-card">
         <h1 class="game-title">
-          <span class="title-icon">🐍</span>
-          <span class="title-text">SNAKE</span>
+          <span class="title-text">FISHING FRENZY</span>
         </h1>
-        <!-- Character & Skin Selector -->
-        <div class="skin-selector-container">
-          <p class="selector-label">Choose Character</p>
-          <div class="char-options">
-            <button class="char-opt active" data-char="ular" type="button" title="Ular">
-              <span class="char-emoji">🐍</span>
-              <span class="char-name">Ular</span>
-            </button>
-            <button class="char-opt" data-char="naga" type="button" title="Naga">
-              <span class="char-emoji">🐉</span>
-              <span class="char-name">Naga</span>
-            </button>
-            <button class="char-opt" data-char="cacing" type="button" title="Cacing">
-              <span class="char-emoji">🪱</span>
-              <span class="char-name">Cacing</span>
-            </button>
-          </div>
-
-          <p class="selector-label skin-label">Choose Skin</p>
-          <div id="skin-options" class="skin-options">
-            <!-- Dynamically populated in game.js -->
-          </div>
-          <p id="selected-skin-name" class="selected-skin-name">Classic Neon</p>
-        </div>
+        <p class="subtitle">Deep Sea Fishing</p>
 
         <button id="btn-start" class="btn btn-primary" type="button">
           <span class="btn-icon">▶</span>
-          Start Game
+          Start Fishing
         </button>
 
         <div class="controls-info">
           <p class="controls-heading">Controls</p>
           <div class="controls-grid">
-            <div class="control-group">
-              <div class="key-row">
-                <kbd>W</kbd>
-              </div>
-              <div class="key-row">
-                <kbd>A</kbd>
-                <kbd>S</kbd>
-                <kbd>D</kbd>
+            <div class="control-row">
+              <span class="control-label">Move Boat</span>
+              <div class="keys-container">
+                <kbd>←</kbd> <kbd>→</kbd> <span class="divider">or</span> <kbd>A</kbd> <kbd>D</kbd>
               </div>
             </div>
-            <span class="controls-divider">or</span>
-            <div class="control-group">
-              <div class="key-row">
-                <kbd>↑</kbd>
-              </div>
-              <div class="key-row">
-                <kbd>←</kbd>
-                <kbd>↓</kbd>
-                <kbd>→</kbd>
+            <div class="control-row">
+              <span class="control-label">Drop Hook</span>
+              <div class="keys-container">
+                <kbd>↓</kbd> <span class="divider">or</span> <kbd>Space</kbd>
               </div>
             </div>
           </div>
@@ -105,37 +69,23 @@
               <span id="hud-score" class="hud-value">0</span>
             </div>
           </div>
-          <div class="hud-item">
-            <span class="hud-label">LENGTH</span>
-            <span id="hud-length" class="hud-value">3</span>
-          </div>
-        </div>
-
-        <!-- Active Power-Up status -->
-        <div id="powerup-hud" class="powerup-hud hidden">
-          <div class="powerup-info">
-            <span id="powerup-icon">❄️</span>
-            <span id="powerup-name">FREEZE</span>
-          </div>
-          <div class="powerup-progress-bg">
-            <div id="powerup-progress-bar"></div>
+          <div class="hud-right-group">
+            <div class="hud-item">
+              <span class="hud-label">LIVES</span>
+              <span id="hud-lives" class="hud-value">❤️ ❤️ ❤️</span>
+            </div>
           </div>
         </div>
 
         <!-- Canvas -->
         <div class="canvas-wrapper">
-          <canvas id="game-canvas" width="600" height="600"></canvas>
-        </div>
-
-        <!-- Mobile Virtual D-Pad -->
-        <div class="mobile-controls">
-          <button id="ctrl-up" class="ctrl-btn ctrl-btn--up" type="button">▲</button>
-          <div class="ctrl-row">
-            <button id="ctrl-left" class="ctrl-btn ctrl-btn--left" type="button">◀</button>
-            <div class="ctrl-center"></div>
-            <button id="ctrl-right" class="ctrl-btn ctrl-btn--right" type="button">▶</button>
+          <!-- Active Event Banner overlay -->
+          <div id="event-banner" class="event-banner">
+            <span id="event-title" class="event-title">EVENT</span>
+            <span id="event-name" class="event-name">BOMB MANIA</span>
+            <span id="event-timer" class="event-timer">15s</span>
           </div>
-          <button id="ctrl-down" class="ctrl-btn ctrl-btn--down" type="button">▼</button>
+          <canvas id="game-canvas" width="800" height="600"></canvas>
         </div>
       </div>
     </div>
@@ -145,41 +95,23 @@
     <!-- ═══════════════════════════════════════════ -->
     <div id="gameover-modal" class="modal-overlay">
       <div class="modal-card">
-        <div class="modal-icon">💀</div>
+        <div class="modal-icon">🏆</div>
         <h2 class="modal-title modal-title--gameover">GAME OVER</h2>
+        <p id="gameover-subtitle" class="modal-subtitle">Good Catch!</p>
         <div class="modal-score-section">
           <p class="modal-score-label">Final Score</p>
           <p id="gameover-score" class="modal-score-value">0</p>
         </div>
-        <div class="modal-actions" style="display: flex; gap: 12px; justify-content: center; margin-top: 16px;">
+        <div class="modal-actions" style="display: flex; gap: 12px; justify-content: center;">
           <button id="btn-restart" class="btn btn-primary" type="button">
             <span class="btn-icon">↻</span>
-            Restart
+            Play Again
           </button>
           <a href="../../index.html" class="btn btn-secondary">
             <span class="btn-icon">🏠</span>
             Home
           </a>
         </div>
-      </div>
-    </div>
-
-    <!-- ═══════════════════════════════════════════ -->
-    <!-- VICTORY MODAL                               -->
-    <!-- ═══════════════════════════════════════════ -->
-    <div id="victory-modal" class="modal-overlay">
-      <div class="modal-card modal-card--victory">
-        <div class="modal-icon">🏆</div>
-        <h2 class="modal-title modal-title--victory">CONGRATULATIONS!</h2>
-        <p class="modal-subtitle">You Win!</p>
-        <div class="modal-score-section">
-          <p class="modal-score-label">Final Score</p>
-          <p id="victory-score" class="modal-score-value">0</p>
-        </div>
-        <button id="btn-play-again" class="btn btn-primary" type="button">
-          <span class="btn-icon">▶</span>
-          Play Again
-        </button>
       </div>
     </div>
 
@@ -203,5 +135,4 @@
   <script src="../../assets/js/achievements.js"></script>
   <script src="game.js"></script>
 </body>
-
 </html>

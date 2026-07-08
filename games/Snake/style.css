@@ -347,6 +347,28 @@ kbd:hover {
   font-size: 1.1rem;
 }
 
+.btn-secondary {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--color-text);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  text-decoration: none;
+}
+
+.btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.10);
+  border-color: rgba(255, 255, 255, 0.35);
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 
+    0 8px 20px rgba(0, 0, 0, 0.35),
+    0 0 15px rgba(255, 255, 255, 0.05);
+  color: #fff;
+}
+
+.btn-secondary:active {
+  transform: translateY(0) scale(0.98);
+}
+
 /* ═══════════════════════════════════════════════════════
    GAME SCREEN
    ═══════════════════════════════════════════════════════ */
@@ -371,6 +393,12 @@ kbd:hover {
   border: 1px solid var(--color-border);
   border-bottom: none;
   border-radius: var(--border-radius) var(--border-radius) 0 0;
+}
+
+.hud-left-group {
+  display: flex;
+  align-items: center;
+  gap: 24px;
 }
 
 .hud-item {
@@ -415,6 +443,79 @@ kbd:hover {
   100% {
     transform: scale(1);
   }
+}
+
+/* ─── Active Power-Up status HUD ─── */
+.powerup-hud {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: var(--canvas-size);
+  padding: 8px 20px;
+  background: rgba(255, 255, 255, 0.02);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--color-border);
+  border-top: none;
+  border-bottom: none;
+  height: 40px;
+  opacity: 1;
+  transition: all var(--transition-normal);
+  overflow: hidden;
+}
+
+.powerup-hud.hidden {
+  height: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+  opacity: 0;
+  border: none;
+}
+
+.powerup-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+}
+
+#powerup-name {
+  text-transform: uppercase;
+}
+
+.powerup-progress-bg {
+  flex: 1;
+  margin-left: 20px;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+#powerup-progress-bar {
+  height: 100%;
+  width: 100%;
+  border-radius: 3px;
+  transition: width 100ms linear, background-color var(--transition-normal);
+}
+
+/* Custom powerup colors */
+.powerup-hud.freeze #powerup-progress-bar {
+  background: #00f0ff;
+  box-shadow: 0 0 10px rgba(0, 240, 255, 0.8);
+}
+.powerup-hud.freeze #powerup-name {
+  color: #00f0ff;
+}
+
+.powerup-hud.gold #powerup-progress-bar {
+  background: #fbbf24;
+  box-shadow: 0 0 10px rgba(251, 191, 36, 0.8);
+}
+.powerup-hud.gold #powerup-name {
+  color: #fbbf24;
 }
 
 /* ─── Canvas ─── */
@@ -685,6 +786,91 @@ kbd:hover {
 .skin-preview--gold {
   background: linear-gradient(135deg, #fbbf24, #b45309);
   box-shadow: 0 0 10px rgba(251, 191, 36, 0.4);
+}
+
+/* Character Options Selector */
+.char-options {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 16px;
+  width: 100%;
+}
+
+.char-opt {
+  flex: 1;
+  background: var(--bg-glass);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-sm);
+  padding: 8px 10px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  transition: all var(--transition-normal);
+  color: var(--color-text-muted);
+}
+
+.char-opt:hover {
+  transform: translateY(-2px);
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--color-text);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.char-opt.active {
+  background: linear-gradient(135deg, var(--color-accent) 0%, rgba(109, 40, 217, 0.3) 100%);
+  border-color: var(--color-accent-hover);
+  color: #fff;
+  box-shadow: 0 0 15px var(--color-accent-glow);
+}
+
+.char-emoji {
+  font-size: 1.4rem;
+}
+
+.char-name {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.skin-label {
+  margin-top: 18px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  padding-top: 18px;
+}
+
+.skin-preview--naga_fire {
+  background: linear-gradient(135deg, #ff3c00, #ffb600);
+  box-shadow: 0 0 10px rgba(255, 60, 0, 0.6);
+}
+
+.skin-preview--naga_ice {
+  background: linear-gradient(135deg, #00f0ff, #1e3a8a);
+  box-shadow: 0 0 10px rgba(0, 240, 255, 0.5);
+}
+
+.skin-preview--naga_shadow {
+  background: linear-gradient(135deg, #a21caf, #1e1b4b);
+  box-shadow: 0 0 10px rgba(162, 28, 175, 0.5);
+}
+
+.skin-preview--cacing_earth {
+  background: linear-gradient(135deg, #a87043, #573315);
+  box-shadow: 0 0 8px rgba(168, 112, 67, 0.3);
+}
+
+.skin-preview--cacing_sand {
+  background: linear-gradient(135deg, #d9a05b, #784f23);
+  box-shadow: 0 0 8px rgba(217, 160, 91, 0.3);
+}
+
+.skin-preview--cacing_grub {
+  background: linear-gradient(135deg, #fbcfe8, #db2777);
+  box-shadow: 0 0 8px rgba(251, 207, 232, 0.3);
 }
 
 .selected-skin-name {
