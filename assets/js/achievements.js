@@ -18,7 +18,9 @@
       { id: "seenall", title: "Seen it all", desc: "Menghadapi 5 peristiwa laut dalam satu permainan.", icon: "👁️" },
       { id: "novice", title: "Novice", desc: "Meraih 250 poin dalam satu permainan.", icon: "🥉" },
       { id: "master", title: "Master Reeler", desc: "Meraih 1000 poin dalam satu permainan.", icon: "🥈" },
-      { id: "surreal", title: "Surreal Angler", desc: "Meraih 10000 poin dalam satu permainan.", icon: "🥇" }
+      { id: "surreal", title: "Surreal Angler", desc: "Meraih 10000 poin dalam satu permainan.", icon: "🥇" },
+      { id: "dinner", title: "Dinner is served", desc: "Kalahkan boss Kraken.", icon: "🦑" },
+      { id: "god", title: "The god himself", desc: "Kalahkan boss Poseidon.", icon: "🔱" }
     ],
     zombie: [
       { id: "baby", title: "Baby steps", desc: "Selesaikan Wave 1.", icon: "👣" },

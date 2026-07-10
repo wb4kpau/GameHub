@@ -662,3 +662,37 @@ kbd {
   color: #fbbf24;
   text-shadow: 0 0 10px rgba(251, 191, 36, 0.5);
 }
+
+/* Boss Specific Themes */
+.event-banner.kraken-boss {
+  border-color: rgba(217, 70, 239, 0.6);
+  box-shadow: 
+    0 10px 30px rgba(0, 0, 0, 0.6),
+    0 0 20px rgba(217, 70, 239, 0.35);
+}
+.event-banner.kraken-boss .event-name {
+  color: #d946ef;
+  text-shadow: 0 0 10px rgba(217, 70, 239, 0.6);
+}
+
+.event-banner.poseidon-boss {
+  border-color: rgba(0, 255, 136, 0.6);
+  box-shadow: 
+    0 10px 30px rgba(0, 0, 0, 0.6),
+    0 0 20px rgba(0, 255, 136, 0.35);
+}
+.event-banner.poseidon-boss .event-name {
+  color: #00ff88;
+  text-shadow: 0 0 10px rgba(0, 255, 136, 0.6);
+}
+
+.event-banner.cursed-poseidon-boss {
+  border-color: rgba(239, 68, 68, 0.7);
+  box-shadow: 
+    0 10px 30px rgba(0, 0, 0, 0.7),
+    0 0 25px rgba(239, 68, 68, 0.5);
+}
+.event-banner.cursed-poseidon-boss .event-name {
+  color: #ef4444;
+  text-shadow: 0 0 12px rgba(239, 68, 68, 0.8);
+}

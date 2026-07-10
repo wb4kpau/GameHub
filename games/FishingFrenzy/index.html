@@ -1,9 +1,11 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Fishing Frenzy — Tangkap ikan neon eksotis di laut dalam, hindari bom bawah laut, dan raih skor tertinggi dengan 5 nyawa!">
+  <meta name="description"
+    content="Fishing Frenzy — Tangkap ikan neon eksotis di laut dalam, hindari bom bawah laut, dan raih skor tertinggi dengan 5 nyawa!">
   <title>Fishing Frenzy</title>
 
   <!-- Google Fonts: Inter -->
@@ -13,6 +15,7 @@
 
   <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
   <div id="app">
 
@@ -46,6 +49,13 @@
                 <kbd>↓</kbd> <span class="divider">or</span> <kbd>Space</kbd>
               </div>
             </div>
+            <div class="control-row">
+              <span class="control-label">Squid Gun</span>
+              <div class="keys-container">
+                <kbd>F</kbd> <kbd>X</kbd> <span class="divider">or</span> <kbd>Z</kbd> <span
+                  style="font-size: 0.65rem; opacity: 0.7; margin-left: 4px;">(Unlock)</span>
+              </div>
+            </div>
           </div>
           <p class="controls-hint">Press <kbd>P</kbd> or <kbd>Esc</kbd> to pause</p>
         </div>
@@ -70,6 +80,12 @@
             </div>
           </div>
           <div class="hud-right-group">
+            <div id="hud-weapon-item" class="hud-item" style="display: none; margin-right: 15px;">
+              <span class="hud-label">WEAPON</span>
+              <span id="hud-weapon" class="hud-value"
+                style="color: #d946ef; text-shadow: 0 0 10px rgba(217, 70, 239, 0.65); min-width: auto;">SQUID
+                GUN</span>
+            </div>
             <div class="hud-item">
               <span class="hud-label">LIVES</span>
               <span id="hud-lives" class="hud-value">❤️ ❤️ ❤️</span>
@@ -119,7 +135,8 @@
     <!-- PAUSE OVERLAY                               -->
     <!-- ═══════════════════════════════════════════ -->
     <div id="pause-overlay" class="modal-overlay">
-      <div class="pause-content" style="text-align: center; display: flex; flex-direction: column; align-items: center; gap: 16px;">
+      <div class="pause-content"
+        style="text-align: center; display: flex; flex-direction: column; align-items: center; gap: 16px;">
         <div class="pause-icon">⏸</div>
         <h2 class="pause-text">PAUSED</h2>
         <p class="pause-hint">Press <kbd>P</kbd> or <kbd>Esc</kbd> to resume</p>
@@ -130,9 +147,35 @@
       </div>
     </div>
 
+    <!-- ═══════════════════════════════════════════ -->
+    <!-- VICTORY MODAL                               -->
+    <!-- ═══════════════════════════════════════════ -->
+    <div id="victory-modal" class="modal-overlay">
+      <div class="modal-card">
+        <div class="modal-icon">👑</div>
+        <h2 class="modal-title" style="color: #00ff88; text-shadow: 0 0 20px rgba(0, 255, 136, 0.65);">VICTORY!</h2>
+        <p class="modal-subtitle">You defeated Poseidon and ruled the deep sea!</p>
+        <div class="modal-score-section">
+          <p class="modal-score-label">Final Score</p>
+          <p id="victory-score" class="modal-score-value">0</p>
+        </div>
+        <div class="modal-actions" style="display: flex; gap: 12px; justify-content: center;">
+          <button id="btn-victory-continue" class="btn btn-primary" type="button">
+            <span class="btn-icon">▶</span>
+            Endless Mode
+          </button>
+          <a href="../../index.html" class="btn btn-secondary">
+            <span class="btn-icon">🏠</span>
+            Home
+          </a>
+        </div>
+      </div>
+    </div>
+
   </div>
 
   <script src="../../assets/js/achievements.js"></script>
-  <script src="game.js"></script>
+  <script src="game.js?v=1.3.8"></script>
 </body>
+
 </html>
